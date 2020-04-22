@@ -25,6 +25,8 @@ void conv2_calculate_element(imgType* img,kernelType* kernel,uint16_t row_start,
 void conv2(imgType* img,kernelType* kernel,imgType* img_proc);
 void gradient(imgType* img,imgType* grad,imgType* theta);
 void non_max(imgType* img,imgType* theta,imgType* res);
+void threshold(imgType* img);
+
 
 void top(imgType* img,imgType* grad,imgType* theta);
 

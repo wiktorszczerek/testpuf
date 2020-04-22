@@ -152,6 +152,45 @@ void non_max(imgType* img,imgType* theta,imgType* res)
 	}
 }
 
+void threshold(imgType* img)
+{
+	double low = 0.05,high=0.09,weak=25.0,strong =255.0;
+	double max = -1.0;
+
+	for(uint16_t i=1;i<RES_HEIGHT-1;++i)
+	{
+		for(uint16_t j=1;j<RES_WIDTH-1;++j)
+		{
+			if(max<(*img)[i][j])
+				max = (*img)[i][j];
+		}
+	}
+
+	double high_threshold = max * high;
+	double low_threshold = high_threshold * low;
+
+	for(uint16_t i=1;i<RES_HEIGHT-1;++i)
+	{
+		for(uint16_t j=1;j<RES_WIDTH-1;++j)
+		{
+			if((*img)[i][j]<low_threshold)
+			{
+				(*img)[i][j] = 0.0;
+			}
+			else if((*img)[i][j]>=high_threshold)
+			{
+				(*img)[i][j] = strong;
+			}
+			else if(low_threshold<=(*img)[i][j] && (*img)[i][j]<high_threshold)
+			{
+				(*img)[i][j] = weak;
+			}
+		}
+	}
+	
+
+
+}
 
 
 void top(imgType* img,imgType* grad,imgType* theta)
@@ -159,4 +198,5 @@ void top(imgType* img,imgType* grad,imgType* theta)
 	//generate_gauss(gauss);
 	gradient(img,grad,theta);
 	non_max(grad,theta,img);
+	threshold(img);
 }
