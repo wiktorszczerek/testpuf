@@ -24,6 +24,7 @@ void invert_kernel(kernelType* kernel);
 void conv2_calculate_element(imgType* img,kernelType* kernel,uint16_t row_start,uint16_t col_start,double* res);
 void conv2(imgType* img,kernelType* kernel,imgType* img_proc);
 void gradient(imgType* img,imgType* grad,imgType* theta);
+void non_max(imgType* img,imgType* theta,imgType* res);
 
 void top(imgType* img,imgType* grad,imgType* theta);
 

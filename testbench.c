@@ -281,7 +281,7 @@ int main(int argc,char** argv)
 			fprintf(stderr,"writing element to file: %u %u\r",i,j);
 			if(j==RES_WIDTH-1)
 				fprintf(fp,";\n ");
-			fprintf(fp,"%lf ",grad[i][j]);
+			fprintf(fp,"%lf ",img[i][j]);
 		}
 	}
 	fprintf(fp,"]");

@@ -75,6 +75,8 @@ void gradient(imgType* img,imgType* grad,imgType* theta)
 	fprintf(stderr,"conv2 for Ky\n");
 	conv2(img,&Ky,&y_res);
 
+	double max = -1.0;
+
 	 fprintf(stderr,"grad and theta\n");
 	 for(uint16_t i=0;i<RES_HEIGHT;++i)
 	{
@@ -82,10 +84,72 @@ void gradient(imgType* img,imgType* grad,imgType* theta)
 		{
 	 		fprintf(stderr,"calculating theta and gradient for: %u %u\r",i,j);	
 	 		(*grad)[i][j] = hypot(x_res[i][j],y_res[i][j]);
+			if(max<(*grad)[i][j])
+			{
+				max = (*grad)[i][j];
+			}
 	 		(*theta)[i][j] = atan2(x_res[i][j],y_res[i][j]);
 		}
 	}
+
+	for(uint16_t i=0;i<RES_HEIGHT;++i)
+	{
+		for(uint16_t j=0;j<RES_WIDTH;++j)
+		{
+			(*grad)[i][j] = ((*grad)[i][j] / max)*255;
+		}
+	}
+	
+
 	fprintf(stderr,"\n");
+}
+
+void non_max(imgType* img,imgType* theta,imgType* res)
+{
+	imgType angle;
+	fprintf(stderr,"non_max\n");
+	for(uint16_t i=0;i<RES_HEIGHT;++i)
+	{
+		for(uint16_t j=0;j<RES_WIDTH;++j)
+		{
+			angle[i][j] = ((*theta)[i][j]*180.0)/M_PI;
+			if(angle[i][j]<0)
+				angle[i][j]+=180.0;
+		}
+	}
+	double q=255.0,r=255.0;
+	for(uint16_t i=1;i<RES_HEIGHT-1;++i)
+	{
+		for(uint16_t j=1;j<RES_WIDTH-1;++j)
+		{
+			if((0<= angle[i][j] && angle[i][j]<22.5) || (157.5<=angle[i][j] && angle[i][j] <180.0))
+			{
+				q=(*img)[i][j+1];
+				r=(*img)[i][j-1];
+			}
+			else if(22.5<=angle[i][j] && angle[i][j]<67.5)
+			{
+				q = (*img)[i+1][j-1];
+				r = (*img)[i-1][j+1];
+			}
+			else if(67.5<=angle[i][j] && angle[i][j]<112.5)
+			{
+				q = (*img)[i+1][j];
+				r = (*img)[i-1][j];
+			}
+			else if(112.5<=angle[i][j] && angle[i][j]<157.5)
+			{
+				q = (*img)[i-1][j-1];
+				r = (*img)[i+1][j+1];
+			}
+
+			if((*img)[i][j] >= q && (*img)[i][j]>=r)
+			{
+				(*res)[i][j]=(*img)[i][j];
+			}
+			else (*res)[i][j] = 0.0;
+		}
+	}
 }
 
 
@@ -94,4 +158,5 @@ void top(imgType* img,imgType* grad,imgType* theta)
 {
 	//generate_gauss(gauss);
 	gradient(img,grad,theta);
+	non_max(grad,theta,img);
 }
