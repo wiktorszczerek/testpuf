@@ -13,18 +13,18 @@
 #define RES_HEIGHT 256
 #define KERNEL_SIZE 3
 
+typedef double imgType[RES_HEIGHT][RES_HEIGHT];
+typedef double kernelType[KERNEL_SIZE][KERNEL_SIZE];
 
-static double Kx[KERNEL_SIZE][KERNEL_SIZE] = {{-1.0,0.0,1.0},{-2.0,0.0,2.0},{-1.0,0.0,1.0}};
-static double Ky[KERNEL_SIZE][KERNEL_SIZE] = {{1.0,2.0,1.0},{0.0,0.0,0.0},{-1.0,-2.0,-1.0}};
 
 
 void generate_gauss(double arr[GAUSS_SIZE][GAUSS_SIZE]);
-void swap_coordinates(double kernel[KERNEL_SIZE][KERNEL_SIZE],uint8_t row1,uint8_t col1,uint8_t row2,uint8_t col2);
-void invert_kernel(double kernel[KERNEL_SIZE][KERNEL_SIZE]);
-void conv2_calculate_element(double img[RES_HEIGHT][RES_WIDTH],double kernel[KERNEL_SIZE][KERNEL_SIZE],uint8_t row_start,uint8_t col_start,double res);
-void conv2(double img[RES_HEIGHT][RES_WIDTH],double kernel[KERNEL_SIZE][KERNEL_SIZE],double img_proc[RES_HEIGHT][RES_WIDTH]);
-void gradient(double img[RES_HEIGHT][RES_WIDTH],double grad[RES_HEIGHT][RES_WIDTH],double theta[RES_HEIGHT][RES_WIDTH]);
+void swap_coordinates(kernelType* kernel,uint8_t row1,uint8_t col1,uint8_t row2,uint8_t col2);
+void invert_kernel(kernelType* kernel);
+void conv2_calculate_element(imgType* img,kernelType* kernel,uint16_t row_start,uint16_t col_start,double* res);
+void conv2(imgType* img,kernelType* kernel,imgType* img_proc);
+void gradient(imgType* img,imgType* grad,imgType* theta);
 
-void top(double img[RES_HEIGHT][RES_WIDTH],double grad[RES_HEIGHT][RES_WIDTH],double theta[RES_HEIGHT][RES_WIDTH]);
+void top(imgType* img,imgType* grad,imgType* theta);
 
 #endif

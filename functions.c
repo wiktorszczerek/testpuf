@@ -1,5 +1,9 @@
 #include "functions.h"
 
+kernelType Kx = {{-1.0,0.0,1.0},{-2.0,0.0,2.0},{-1.0,0.0,1.0}};
+kernelType Ky = {{1.0,2.0,1.0},{0.0,0.0,0.0},{-1.0,-2.0,-1.0}};
+
+
 void generate_gauss(double arr[GAUSS_SIZE][GAUSS_SIZE])
 {
 	for(uint8_t i=GAUSS_SIZE-1;i>=0;--i)
@@ -11,68 +15,82 @@ void generate_gauss(double arr[GAUSS_SIZE][GAUSS_SIZE])
 	}
 }
 
-void swap_coordinates(double kernel[KERNEL_SIZE][KERNEL_SIZE],uint8_t row1,uint8_t col1,uint8_t row2,uint8_t col2)
+void swap_coordinates(kernelType* kernel,uint8_t row1,uint8_t col1,uint8_t row2,uint8_t col2)
 {
-	double holder = kernel[row1][col1];
-	kernel[row1][col1] = kernel[row2][col1];
-	kernel[row2][col2] = holder;
+	double holder = (*kernel)[row1][col1];
+	(*kernel)[row1][col1] = (*kernel)[row2][col2];
+	(*kernel)[row2][col2] = holder;
 }
 
 
-void invert_kernel(double kernel[KERNEL_SIZE][KERNEL_SIZE]) //it is stupid
+void invert_kernel(kernelType* kernel) //it is stupid
 {
 	//for KERNEL SIZE = 3
+	swap_coordinates(kernel, 0, 1, 1, 0);
+	swap_coordinates(kernel, 0, 2, 2, 0);
 	swap_coordinates(kernel, 1, 2, 2, 1);
-	swap_coordinates(kernel, 1, 3, 3, 1);
-	swap_coordinates(kernel, 2, 3, 3, 2);
+	fprintf(stderr,"kernel:\n");
+	for(uint8_t i=0;i<KERNEL_SIZE;++i)
+	{
+		for(uint8_t j=0;j<KERNEL_SIZE;++j)
+			fprintf(stderr,"%lf ",(*kernel)[i][j]);
+		fprintf(stderr,"\n");
+	}
 }
 
-void conv2_calculate_element(double img[RES_HEIGHT][RES_WIDTH],double kernel[KERNEL_SIZE][KERNEL_SIZE],uint8_t row_start,uint8_t col_start,double res)
+void conv2_calculate_element(imgType* img,kernelType* kernel,uint16_t row_start,uint16_t col_start,double* res)
 {
 	for(uint8_t i=0;i<KERNEL_SIZE;++i)
 	{
 		for(uint8_t j=0;j<KERNEL_SIZE;++j)
 		{
-			res+=kernel[i][j]*img[row_start+i][col_start+j];
+			*res+=(*kernel)[i][j]*((*img)[row_start+i][col_start+j]);
 		}
 	}
+
 }
 
-void conv2(double img[RES_HEIGHT][RES_WIDTH],double kernel[KERNEL_SIZE][KERNEL_SIZE],double img_proc[RES_HEIGHT][RES_WIDTH])
+void conv2(imgType* img,kernelType* kernel,imgType* img_proc)
 {
 	invert_kernel(kernel);
-
-	for(uint8_t i=2;i<RES_HEIGHT;++i)
+	 for(uint16_t i=2;i<RES_HEIGHT;++i)
 	{
-		for(uint8_t j=2;j<RES_WIDTH;++j)
+		for(uint16_t j=2;j<RES_WIDTH;++j)
 		{
-			conv2_calculate_element(img, kernel, i-(KERNEL_SIZE-1), j-(KERNEL_SIZE-1), img_proc[i][j]);
+
+	 		fprintf(stderr,"calculating element: %u %u\r",i,j);	
+	 		conv2_calculate_element(img, kernel, i-(KERNEL_SIZE-1), j-(KERNEL_SIZE-1),&((*img_proc)[i-(KERNEL_SIZE-1)][j-(KERNEL_SIZE-1)]));
 		}
 	}
+	fprintf(stderr,"\n");
+	fprintf(stderr,"sample value conv2: %lf\n",(*img_proc)[100][100]);
 }
 
-void gradient(double img[RES_HEIGHT][RES_WIDTH],double grad[RES_HEIGHT][RES_WIDTH],double theta[RES_HEIGHT][RES_WIDTH])
+void gradient(imgType* img,imgType* grad,imgType* theta)
 {
-	double x_res[RES_HEIGHT][RES_WIDTH];
-	double y_res[RES_HEIGHT][RES_WIDTH];
-	conv2(img,Kx,x_res);
-	conv2(img,Ky,y_res);
+	fprintf(stderr,"gradient start\n");
+	imgType x_res,y_res;
+	fprintf(stderr,"conv2 for Kx\n");
+	conv2(img,&Kx,&x_res);
+	fprintf(stderr,"conv2 for Ky\n");
+	conv2(img,&Ky,&y_res);
 
-	for(uint8_t i=0;i<RES_HEIGHT;++i)
+	 fprintf(stderr,"grad and theta\n");
+	 for(uint16_t i=0;i<RES_HEIGHT;++i)
 	{
-		for(uint8_t j=0;j<RES_WIDTH;++j)
+		for(uint16_t j=0;j<RES_WIDTH;++j)
 		{
-			grad[i][j] = hypot(x_res[i][j],y_res[i][j]);
-			theta[i][j] = atan2(x_res[i][j],y_res[i][j]);
+	 		fprintf(stderr,"calculating theta and gradient for: %u %u\r",i,j);	
+	 		(*grad)[i][j] = hypot(x_res[i][j],y_res[i][j]);
+	 		(*theta)[i][j] = atan2(x_res[i][j],y_res[i][j]);
 		}
 	}
-
-
+	fprintf(stderr,"\n");
 }
 
 
 
-void top(double img[RES_HEIGHT][RES_WIDTH],double grad[RES_HEIGHT][RES_WIDTH],double theta[RES_HEIGHT][RES_WIDTH])
+void top(imgType* img,imgType* grad,imgType* theta)
 {
 	//generate_gauss(gauss);
 	gradient(img,grad,theta);
