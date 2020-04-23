@@ -26,6 +26,7 @@ void conv2(imgType* img,kernelType* kernel,imgType* img_proc);
 void gradient(imgType* img,imgType* grad,imgType* theta);
 void non_max(imgType* img,imgType* theta,imgType* res);
 void threshold(imgType* img);
+void hysteresis(imgType* img,double weak,double strong);
 
 
 void top(imgType* img,imgType* grad,imgType* theta);

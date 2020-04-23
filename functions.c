@@ -187,9 +187,29 @@ void threshold(imgType* img)
 			}
 		}
 	}
-	
+}
 
-
+void hysteresis(imgType* img,double weak,double strong)
+{
+	for(uint16_t i=1;i<RES_HEIGHT-1;++i)
+	{
+		for(uint16_t j=1;j<RES_WIDTH-1;j++)
+		{
+			if((*img)[i][j] == weak)
+			{
+				if(((*img)[i+1][j-1] == strong) || ((*img)[i+1][j] == strong) || ((*img)[i+1][j+1] == strong)
+                        || ((*img)[i][j-1] == strong) || ((*img)[i][j+1] == strong)
+                        || ((*img)[i-1][j-1] == strong) || ((*img)[i-1][j] == strong) || ((*img)[i-1][j+1] == strong))
+				{
+					(*img)[i][j] = strong;
+				}
+				else
+				{
+					(*img)[i][j] = 0.0;
+				}
+			}
+		}
+	}
 }
 
 
@@ -199,4 +219,5 @@ void top(imgType* img,imgType* grad,imgType* theta)
 	gradient(img,grad,theta);
 	non_max(grad,theta,img);
 	threshold(img);
+	hysteresis(img,25.0,255.0);
 }
